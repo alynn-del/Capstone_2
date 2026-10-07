@@ -1,0 +1,16 @@
+Customer Success Strategies
+
+Customer success teams focus on adoption, retention, issue resolution, and long-term customer value.
+
+Core strategies:
+- Monitor customer usage and engagement.
+- Identify customers at risk of churn.
+- Address recurring complaints through root-cause analysis.
+- Coordinate with product, sales, and support teams.
+- Use customer feedback to prioritize improvements.
+- Track resolution quality, not only resolution speed.
+- Share customer insights with leadership and delivery teams.
+
+Sales performance should be considered alongside customer outcomes. High sales volume may not indicate sustainable performance if it is associated with poor retention, unresolved complaints, or low customer satisfaction.
+
+Recommended policy considerations include clear ownership of customer issues, escalation paths for high-severity complaints, and regular review of churn and satisfaction trends.

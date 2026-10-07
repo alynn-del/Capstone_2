@@ -1,0 +1,19 @@
+Code Review Process
+
+All production code must be reviewed before it is merged.
+
+Process:
+1. The developer creates a feature branch.
+2. The developer opens a pull request with a clear description of the change.
+3. Automated tests and quality checks must run before approval.
+4. At least one qualified reviewer evaluates the pull request.
+5. The reviewer checks correctness, security, maintainability, test coverage, and documentation.
+6. The developer addresses review comments.
+7. The reviewer approves the pull request.
+8. The change is merged after required checks pass.
+
+Review Expectations:
+- Reviewers should focus on material risks and defects.
+- Developers should keep pull requests small enough to review effectively.
+- Emergency changes require follow-up documentation and retrospective review.
+- No developer should approve their own production change.

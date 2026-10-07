@@ -1,0 +1,23 @@
+Company Security Policy
+
+All employees must protect company, customer, and confidential information.
+
+Access Control:
+- Employees must use unique accounts and strong passwords.
+- Multi-factor authentication is required for systems containing sensitive information.
+- Access should be limited to the minimum required for an employee's role.
+- Shared accounts are not permitted.
+
+Data Protection:
+- Confidential data must be stored only in approved company systems.
+- Sensitive information must not be sent through personal email or unauthorized messaging tools.
+- Lost devices or suspected data exposure must be reported immediately.
+
+Security Incidents:
+- Employees should report suspected phishing, unauthorized access, or data loss to the security team.
+- Security incidents should be reported as soon as they are identified.
+- Employees must not investigate suspected incidents independently if doing so could destroy evidence.
+
+Remote Work:
+- Company devices must use approved security controls when employees work remotely.
+- Public or unsecured networks should not be used for sensitive business activity without approved protections.

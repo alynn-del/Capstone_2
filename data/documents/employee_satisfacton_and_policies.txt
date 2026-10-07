@@ -1,0 +1,14 @@
+Employee Satisfaction and Policy Factors
+
+Employee satisfaction may be affected by workload, manager support, career development, recognition, flexibility, and confidence in company processes.
+
+Relevant company practices include:
+- Managers should hold regular one-to-one meetings with employees.
+- Teams should discuss workload concerns before they become sustained problems.
+- Employees should receive feedback during the review cycle.
+- Employees should have access to relevant training and development opportunities.
+- Teams should follow the code review process to support quality and knowledge sharing.
+- Security controls are intended to protect company and customer information without creating unnecessary barriers to work.
+- Customer complaint trends should be shared with relevant product and service teams.
+
+When interpreting employee satisfaction results, consider differences by department, role, tenure, workload, and manager. Company documents do not establish an external industry benchmark. Any comparison with industry standards requires a separate, authoritative benchmark source.

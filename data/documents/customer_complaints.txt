@@ -1,0 +1,19 @@
+Customer Complaint Handling
+
+Customer complaints should be handled consistently, respectfully, and promptly.
+
+Process:
+1. Record the complaint in the customer support system.
+2. Confirm receipt with the customer.
+3. Classify the complaint by product, severity, and urgency.
+4. Assign an owner responsible for follow-up.
+5. Investigate the issue using available customer and transaction information.
+6. Provide the customer with an update and expected resolution timeline.
+7. Escalate complaints involving security, privacy, safety, or regulatory concerns.
+8. Record the resolution and close the complaint only after follow-up is complete.
+9. Review recurring complaints for trends and potential process improvements.
+
+Service Expectations:
+- High-severity complaints receive priority handling.
+- Customer communications should be clear and factual.
+- Employees should not promise refunds, credits, or other remedies without the required approval.
