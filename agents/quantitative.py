@@ -39,20 +39,24 @@ def validate_sql(query: str) -> dict:
     if sql.endswith(";"):
         sql_stripped = sql[:-1].strip()
         if ";" in sql_stripped:
-                return {
-                    "valid": False,
-                    "reason": "Multiple SQL statements are not permitted.",
-                }
+            return {
+                "valid": False,
+                "reason": "Multiple SQL statements are not permitted.",
+            }
 
-    # ------Check for blocked keywords--------
-    blocked = ["DROP", "DELETE", "UPDATE", "INSERT", "ALTER", "TRUNCATE", "REPLACE", "REINDEX", "REMAME", "MERGE", "GRANT", "REVOKE", "COMMIT", "ROLLBACK"]
-    for word in blocked:
-        if word in sql.upper():
-            return {"valid": False, "reason": f"Blocked keyword: {word}"}
+    # ------Check for blocked keywords (word-boundary match, not substring)--------
+    blocked = ["DROP", "DELETE", "UPDATE", "INSERT", "ALTER", "TRUNCATE",
+               "REPLACE", "REINDEX", "RENAME", "MERGE", "GRANT", "REVOKE",
+               "COMMIT", "ROLLBACK"]
+    pattern = r"\b(" + "|".join(blocked) + r")\b"
+    match = re.search(pattern, sql, flags=re.IGNORECASE)
+    if match:
+        return {"valid": False, "reason": f"Blocked keyword: {match.group(1).upper()}"}
+
     if not sql.strip().upper().startswith(("SELECT", "WITH")):
         return {"valid": False, "reason": "SQL queries must start with SELECT or WITH."}
-    
-    return {"valid": True, "reason": "Read-only SQL query is valid.", "sql":sql}
+
+    return {"valid": True, "reason": "Read-only SQL query is valid.", "sql": sql}
 
 #------------------Helper function to clean SQL formatting-----------------
 def clean_sql(raw_sql: str) -> str:
@@ -155,21 +159,25 @@ def run(query: str) -> dict:
         # "clearly and concisely" → this is the user-facing synopsis; keep it short.
         # "no markdown syntax" → output is printed raw to the CLI, where stray *, #,
         #   or | would show as literal characters, not formatting.
+        # "read only system" → explicitly let Gemini know this is a read only system
+        #     do not suggest a new query if the other failed.
+        # "do not output thought process" → keep interpretation as just interpretation
+        #      avoid exhausting output tokens
         # max_tokens=204 → a few sentences of plain-text summary; caps cost.
     # ------------------------------------------------------------------------
     interpretation = client.chat.completions.create(
         model="gemini-3.5-flash-lite",
         max_tokens=204,
         messages=[
-            {
-                "role": "user",
-                "content": (
+            {"role": "user",
+            "content": (
                     f"User question: {query}\n\n"
                     f"SQL query: {sql}\n\n"
                     f"Columns: {cols}\n"
                     f"SQL output: {rows}\n\n"
-                    "Interpret these results clearly and concisely. Output should have no markdown syntax."
-                ),
+                    "Interpret these results clearly and concisely. Output should have no markdown syntax. "
+                    "This is a read-only system: do not suggest any new query that edits data "
+                    "Do not output your reasoning or thought process; give only the final interpretation."),
             }
         ],
     )

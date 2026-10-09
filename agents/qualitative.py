@@ -43,6 +43,7 @@ Answer the question using ONLY the context provided below.
 If the answer is not in the context, say "I cannot find this information in the provided documents."
 Always cite the source number(s) you used as well as the name of the source written at the top of each source.
 The final output should contain no markdown formatting.
+Do not output your thought process only final conclusion.
 
 CONTEXT:
 {context}
@@ -64,13 +65,14 @@ def run(query: str) -> dict:
     #-------Break down before returning--------
     answer = message.choices[0].message.content.strip()
     usage = message.usage
-
+    refused = "cannot find this information" in answer.lower() # for missing info in docs (special case)
     input_tokens = usage.prompt_tokens
     output_tokens = usage.completion_tokens
 
     return {
         "answer": answer,
         "chunks": chunks,
+        "refused": refused,
         "input_tokens": input_tokens,
         "output_tokens": output_tokens,
     }

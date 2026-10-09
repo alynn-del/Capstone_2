@@ -30,6 +30,23 @@ def evaluate_toxicity(answer: str) -> dict:
     flagged = {c: s for c, s in scores.items() if s >= TOXICITY_THRESHOLD}
     return {"passed": not flagged, "scores": scores, "flagged": flagged}
 
+#------------Helper: toxic INPUT------------------
+WRITE_INTENT = re.compile(
+    r"\b(remove|delete|drop|erase|wipe|update|insert|modify|alter)\b", re.IGNORECASE
+)
+
+def check_input_safety(query: str) -> dict:
+    """Pre-flight screen on the raw user query, before any LLM call."""
+    # Toxicity — reuse the same model/threshold as the answer-side check
+    if not evaluate_toxicity(query)["passed"]:
+        return {"blocked": True,
+                "reason": "the request contains hostile or toxic language."}
+    # Destructive intent — this is a read-only analytics system
+    if WRITE_INTENT.search(query):
+        return {"blocked": True,
+                "reason": "this system is read-only and cannot add, change, or "
+                          "delete records. It can only answer questions about data."}
+    return {"blocked": False, "reason": ""}
 
 # ------------ Helper: entailment (Gemini as reviewer) ------------------
 def check_entailment(answer: str, chunks: list[dict]) -> dict:

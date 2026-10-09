@@ -2,7 +2,7 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 from agents import qualitative, quantitative
-from validation.validator import validate_qualitative, validate_quantitative
+from validation.validator import validate_qualitative, validate_quantitative, check_input_safety
 from tokenomics.logger import log
 load_dotenv()
 
@@ -42,9 +42,16 @@ Reply with one word only: qualitative, quantitative, or both."""
 
 def run(query: str):
     print(f"\nQuery: {query}")
+    # --- Pre-flight guard: screen the INPUT before any model call ---
+    safety = check_input_safety(query)
+    if safety["blocked"]:
+        print(f"\n⛔  Request blocked: {safety['reason']}")
+        return
+
+    #-----After checking user query then classify-------
     route = classify(query)
     print(f"Route: {route}")
-
+    
     qual_result = None
     quant_result = None
 
@@ -65,6 +72,10 @@ def run(query: str):
             print(f"\nThe generated answer did not pass validation ({validation['warning']}) "
                   "— it may contain inaccurate, unsupported, or inappropriate content, "
                   "so it has not been shown.")
+        elif qual_result["refused"]:
+            # Not a failure in validity, the model honestly found nothing in the documents
+            print("\nℹ️  No relevant information was found in the available documents.")
+            print(f"\n[Qualitative]\n{qual_result['answer']}")    
         else:
             print("\n✅  Qualitative answer validated.")
             #------Only print full results when validated--------
@@ -93,6 +104,21 @@ def run(query: str):
         else:
             print("\n✅  Quantitative answer validated.")
             #------Only print full results when validated--------
+            #-------Printing supporting SQL data in a nice format----------------
+            rows = quant_result["rows"]
+            columns = quant_result["columns"]
+            if len(rows) == 1 and len(columns) == 1: # for single entries 
+                print(f"Answer: {rows[0][0]}")
+            else:
+                widths = [max(len(str(c)), *(len(str(r[i])) for r in rows[:5])) for i, c in enumerate(columns)]
+
+                print(f"Supporting Data (showing {min(5, len(rows))} of {len(rows)}):")
+                print(" | ".join(str(c).ljust(w) for c, w in zip(columns, widths)))
+                print("-|-".join("-" * w for w in widths))
+
+                for row in rows[:5]:
+                    print(" | ".join(str(v).ljust(w) for v, w in zip(row, widths)))
+
             print(f"\n[Quantitative]\n{quant_result['answer']}")
             print(f"SQL used: {quant_result['sql']}")
 
