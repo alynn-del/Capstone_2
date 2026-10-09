@@ -1,5 +1,4 @@
 # CLI entry point
-# main.py
 from agents.manager import run
 
 def main():

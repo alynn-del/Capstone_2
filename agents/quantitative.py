@@ -17,6 +17,8 @@ Available tables:
 - employees(id, department, satisfaction_score, tenure_years)
 """
 
+#----------Validating SQL query before calling database-------------
+    # this is separate from validator.py because it needs to be called before the query is executed at all
 def validate_sql(query: str) -> dict:
 
     sql = (query or "").strip()
@@ -72,8 +74,21 @@ def clean_sql(raw_sql: str) -> str:
     return sql
 
 def generate_sql(query: str) -> dict:
+
+    # --- NL→SQL prompt design -----------------------------------------------
+        # SCHEMA_CONTEXT injected first → model sees exact tables/columns before the
+        #   task, so it can only reference real fields (grounds the generation).
+        # "one complete executable SQLite query" → dialect-specific + runnable as-is;
+        #   downstream code executes it directly with no editing.
+        # "no Markdown fences or explanations" → output must be raw SQL
+        # "must include the correct FROM table" → guards the most common failure mode
+        #   (valid-looking SQL with no/wrong source table).
+        # "only tables and columns in the schema" → blocks hallucinated fields that
+        #   would throw at execution time.
+        # max_tokens=512 → room for a multi-clause query (JOINs/GROUP BY) while still capping cost.
+    # ------------------------------------------------------------------------
     message = client.chat.completions.create(
-        model="gemini-3.6-flash",
+        model="gemini-3.5-flash-lite",
         max_tokens=512,
         messages=[
             {
@@ -130,8 +145,38 @@ def run(query: str) -> dict:
         rows = cursor.fetchall()
         cols = [description[0] for description in cursor.description]
 
+    #-----------------Generate interpretation of the results--------------
+
+    # --- Result interpretation prompt design ----------------------------
+        # Pass question + SQL + columns + rows together so the model explains the
+        #   actual returned data in the context of what was asked (not a guess).
+        # Including the SQL and column names helps the interpretation be focused on real
+        #   fields, so numbers get labeled correctly instead of mislabeled.
+        # "clearly and concisely" → this is the user-facing synopsis; keep it short.
+        # "no markdown syntax" → output is printed raw to the CLI, where stray *, #,
+        #   or | would show as literal characters, not formatting.
+        # max_tokens=204 → a few sentences of plain-text summary; caps cost.
+    # ------------------------------------------------------------------------
+    interpretation = client.chat.completions.create(
+        model="gemini-3.5-flash-lite",
+        max_tokens=204,
+        messages=[
+            {
+                "role": "user",
+                "content": (
+                    f"User question: {query}\n\n"
+                    f"SQL query: {sql}\n\n"
+                    f"Columns: {cols}\n"
+                    f"SQL output: {rows}\n\n"
+                    "Interpret these results clearly and concisely. Output should have no markdown syntax."
+                ),
+            }
+        ],
+    )
+    answer = interpretation.choices[0].message.content.strip()
+
     return {
-        "answer": "Query executed successfully.",
+        "answer": answer,
         "sql": sql,
         "rows": rows,
         "columns": cols,
@@ -139,37 +184,3 @@ def run(query: str) -> dict:
         "input_tokens": sql_result["input_tokens"],
         "output_tokens": sql_result["output_tokens"],
     }
-
-def test_quantitative_agent():
-    test_queries = [
-        "Show me monthly revenue trends",
-        "What is our customer churn rate?",
-        "Compare Q4 performance across regions",
-    ]
-
-    for number, user_query in enumerate(test_queries, start=1):
-        print(f"\n{'=' * 70}")
-        print(f"TEST {number}: {user_query}")
-        print("=" * 70)
-
-        result = run(user_query)
-
-        print(f"\nValidation: {result.get('validation')}")
-        print(f"Generated SQL: {result.get('sql')}")
-        print(f"Rows returned: {len(result.get('rows', []))}")
-        print(f"Input tokens: {result.get('input_tokens', 0)}")
-        print(f"Output tokens: {result.get('output_tokens', 0)}")
-
-        if result.get("columns"):
-            print(f"Columns: {result['columns']}")
-
-        if result.get("rows"):
-            print("First five rows:")
-            for row in result["rows"][:5]:
-                print(row)
-
-        print(f"\nAgent interpretation:\n{result.get('answer')}")
-
-
-if __name__ == "__main__":
-    test_quantitative_agent()
